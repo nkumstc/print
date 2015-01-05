@@ -10,6 +10,10 @@
 return array(
     //调试信息
 	'SHOW_PAGE_TRACE' => 1,
+
+    //SQL生成缓存
+    'DB_SQL_BUILD_CACHE' => true,
+
     //验证方式
     'VERIFY_WAY'=>'Common.Urp',
 
