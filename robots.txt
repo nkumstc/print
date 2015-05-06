@@ -1,4 +1,10 @@
 User-Agent: *
+<<<<<<< HEAD
 Allow: /
 Disallow: /Ptinter/
 Disallow: /api.php/
+=======
+Allow: /pages/*
+Allow: /*
+
+>>>>>>> 5ce98db80a39c008aaa13d33e189d54c88fbc9d1

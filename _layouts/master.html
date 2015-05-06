@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+  {% include head.html %}
+  <body>
+      {% include mobilemenu.html %}
+      {{ content }}
+	  {% if page.title == "Home" %}
+		  <script src="/assets/js/MetroJs.min.js"></script>
+		  <script type="text/javascript">
+			$(document).ready(function(){
+				$(".live-tile").liveTile();
+			});
+		  </script>
+	  {% endif %}
+    <a href="#" class="scrollToTop"></a>
+	{% include scroll-up.html %}
+  </body>
+</html>

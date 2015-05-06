@@ -1,0 +1,11 @@
+---
+layout: none
+index: noindex
+---
+[{% for post in site.posts %}{
+"title"    : "{{ post.title | escape }}",
+"category" : "{{ post.category }}",
+"tags"	   : "{{post.tags | array_to_sentence_string}}",
+"url"      : "{{ post.url }}",
+"date"     : "{{ post.date | date: "%B %d, %Y" }}"}
+{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
