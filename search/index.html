@@ -1,0 +1,40 @@
+---
+layout: page
+title: 云印南天—搜索
+description: 云印文档搜索
+---
+<form class="searh-form" role="form">
+<div id="search-form">
+	<input class="search form-control" name="q" placeholder="搜索" type="text">
+</div>
+<div><a href="http://search.yunyin.org/">试试百度站内搜索</a></div>
+</form>
+<div class="search-message"></div>
+<div id="results">
+  <h2 class="results-title"></h2>
+  <ul class="results-list"></ul>
+</div>
+<script src="/assets/js/jekyll-search.js"></script>
+<script>
+$(document).ready(function() {
+    var qry = decodeURI(GetURLParameter('q'));
+		var data = [{% for post in site.posts %}{
+		"title"    : "{{ post.title | escape }}",
+		"category" : "{{ post.category }}",
+		"tags"	   : "{{post.tags | array_to_sentence_string}}",
+		"url"      : "{{ post.url }}",
+		"date"     : "{{ post.date | date: "%B %d, %Y" }}"}{% if forloop.last %}{% else %},{% endif %}{% endfor %}];
+
+    var x = $(".search").jekyllSearch({
+			jsonData            : null,
+            template            : '<li><h4><a href="{url}" title="{title}">{title}</a></h4>发布于 {date}<br>Tags: {tags} </li>',
+            searchResults       : '#results',
+            searchResultsTitle  : '<h3>搜索结果</h3>',
+            limit               : '10',
+            noResults           : '<h3>没有找到匹配文档</h3>Suggestions:<ul><li>检查关键词</li><li>试试其他词</li><li>试试百度站内<a href="http://search.yunyin.org/cse/search?s=9310778374886739847&q='+qry+'">搜索</a></li></ul>'
+     });
+     if(qry) {
+			$(".search").val(qry).trigger('keyup').focus();
+     }
+});
+</script>

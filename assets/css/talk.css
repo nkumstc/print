@@ -1,0 +1,32 @@
+.content { position: absolute; bottom: 50%; padding: 20px; border-radius: 20px; font-size: 1.1em; text-align: center; opacity: 0; cursor: default; pointer-events: none; font-family: 'Gochi Hand', cursive }
+#talk1 .content { background: #e35583; z-index: 9999; color: #fff; -webkit-font-smoothing: antialiased; -webkit-transition: opacity 0.3s, -webkit-transform 0.3s; transition: opacity 0.3s, transform 0.3s; left: 4em; -webkit-transform-origin: -2em 50%; transform-origin: -2em 50%; -webkit-transform: translate3d(0, 50%, 0) rotate3d(1, 1, 1, 30deg); transform: translate3d(0, 50%, 0) rotate3d(1, 1, 1, 30deg) }
+#talk1>.content::before, #talk1>.content::after { content: ''; position: absolute; right: 99% }
+#talk1>.content::before { height: 100%; width: 3em }
+#talk1>.content::after { width: 2em; height: 2em; top: 50%; margin: -1em 0 0; background: url(../image/svg/talk1.svg) no-repeat center center; background-size: 100% }
+#talk1.active .content { opacity: 1; -webkit-transform: translate3d(0, 50%, 0) rotate3d(0, 0, 0, 0); transform: translate3d(0, 50%, 0) rotate3d(0, 0, 0, 0); pointer-events: auto }
+#talk2 .content { float: left; background: #fff; z-index: 10000; color: #dd5864; -webkit-transition: opacity 0.3s, -webkit-transform 0.3s; transition: opacity 0.3s, transform 0.3s; -webkit-transform: translate3d(0, 50px, 0) rotate3d(1, 1, 1, 6deg); transform: translate3d(0, 50px, 0) rotate3d(1, 1, 1, 6deg) }
+#talk2 .content::after { content: ''; position: absolute; width: 60px; height: 120px; top: 100%; background: url(../image/svg/talk2.svg) no-repeat center center; background-size: 100%; -webkit-transform-origin: 50% 0; transform-origin: 50% 0; -webkit-transition: -webkit-transform 0.3s; transition: transform 0.3s; left: 25%; -webkit-transform: scale3d(-1, 1, 1) rotate3d(1, 1, 1, 25deg) translate3d(0, -15px, 0); transform: scale3d(-1, 1, 1) rotate3d(1, 1, 1, 25deg) translate3d(0, -15px, 0) }
+#talk2.active .content { opacity: 1; pointer-events: auto; -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0) }
+.talk { display: inline-block; position: relative; z-index: 999; width: 2em; height: 1.5em; cursor: pointer }
+.item { position: static }
+#talk1 { float: left }
+#talk2 { float: right }
+#talk1 .item { float: right }
+#talk2 .item { float: left }
+.item svg { width: 15em; height: 15em; }
+#cauda { width: 72px; height: 79px; -moz-animation: cauda 6s linear infinite; -webkit-animation: cauda 6s linear infinite; animation: cauda 6s linear infinite; -moz-transform-origin: 80% 80%; -ms-transform-origin: 80% 80%; -webkit-transform-origin: 80% 80%; transform-origin: 80% 80%; background: red; }
+@-moz-keyframes cauda {
+	0% { -moz-transform: rotate(-10deg); transform: rotate(-10deg); }
+	50% { -moz-transform: rotate(30deg); transform: rotate(30deg); }
+	100% { -moz-transform: rotate(-10deg); transform: rotate(-10deg); }
+}
+@-webkit-keyframes cauda {
+	0% { -webkit-transform: rotate(-10deg); transform: rotate(-10deg); }
+	50% { -webkit-transform: rotate(30deg); transform: rotate(30deg); }
+	100% { -webkit-transform: rotate(-10deg); transform: rotate(-10deg); }
+}
+@keyframes cauda {
+	0% { -moz-transform: rotate(-10deg); -ms-transform: rotate(-10deg); -webkit-transform: rotate(-10deg); transform: rotate(-10deg); }
+	50% { -moz-transform: rotate(30deg); -ms-transform: rotate(30deg); -webkit-transform: rotate(30deg); transform: rotate(30deg); }
+	100% { -moz-transform: rotate(-10deg); -ms-transform: rotate(-10deg); -webkit-transform: rotate(-10deg); transform: rotate(-10deg); }
+}
