@@ -9,11 +9,12 @@
 <span class="visible-xs">南开北洋云打印平台</span>
 </h1>
 <div class="text-center"><span class="label label-danger">无需“忧”盘</span> <span class="label label-info">提前打印</span> <span class="label label-warning">随时随地</span> <span class="label label-success">状态可知</span></div>
+<br/>
 </BLOCK>
 
 <BLOCK name='main'>
 <main class="container-fluid">
-<div class="col-lg-12">
+<div class="col-lg-10 col-lg-offset-1 col-xs-12">
             <div id="myCarousel" class="carousel slide" data-ride="carousel">
             <div class="carousel-inner">
             <div class="item active">
@@ -43,9 +44,9 @@
                     </div>
               </CASE>
               <DEFAULT/>
-                 <form class="col-lg-12" method="post" action="{$status}/Auth/" onsubmit="return checkForm();">                   
+                 <form method="post" action="{$status}/Auth/" onsubmit="return checkForm();">                   
                    <div class="row text-center">
-                    <div class="col-lg-4 col-md-5 col-sm-8 col-lg-offset-1 ">
+                    <div class="col-lg-4 col-md-5 col-sm-8 col-lg-offset-1">
                         <div class="input-group">
                             <span class="input-group-addon">账号</span>
                             <input type="text"  id="name" tabindex="1" name="number"  class="form-control" placeholder="学号" pattern="(\d{7}|\d{10})" required>
@@ -71,7 +72,8 @@
                             <strong>天津大学</strong>同学<strong>首次</strong>登录时,使用<code>天大办公网</code>账号密码登录即可！<br><strong>南开大学</strong>同学<strong>首次</strong>登录时,使用<code>ＵＲＰ系统</code>账号密码登录即可！
                         </p>
                  </div>
-             </form>            
+             </form>
+             <script src='{$status}__PUBLIC__/js/pwd.js' defer></script>       
     	</SWITCH> 
     </main>
 	<footer class='copyright text-center'>
@@ -80,14 +82,13 @@
         <li><a rel="nofollow" href="__ROOT__/User/forget">找回密码</a></li>
         <li><a rel="nofollow" href="__ROOT__/Printer/">打印店</a></li>
         <li><a href="__ROOT__/Index/privacy">隐私声明</a></li>
-        <li><a rel="nofollow" href="https://github.com/nkumstc/print">开源项目</a></li>
+        <li><a rel="nofollow" href="https://github.com/YunYinORG/print">开源项目</a></li>
         <li><a href="http://www.yunyin.org/pages/">文档中心</a></li>
-        <li><a href="mailto:contactATyunyin.org" onclick="this.href=this.href.replace(/AT/,'&#64;')">联系我们</a></li>
+        <li><a href="__ROOT__/Card/">招卡中心</a></li>
 	</ul>
 	</footer>
 </BLOCK>
 <BLOCK name="end">
-<script src='__PUBLIC__/js/pwd.js' defer></script>
 <script>
     function checkForm()
     {
@@ -120,6 +121,3 @@
 	});
     </script>
 </BLOCK>
-<select name="" id="input" class="form-control" required="required">
-    <option value=""></option>
-</select>
