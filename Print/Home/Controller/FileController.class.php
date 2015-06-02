@@ -151,13 +151,9 @@ class FileController extends Controller {
 		{
 			/*批量获取文件名*/
 			
-			// $newnames  = I('post.newnames');
-			// $suffixes  = I('post.suffixes');
-			// $number    = I('post.number', 0, int);
-			
 			/*获取文件设置基本信息*/
 			$File      = D('File');
-			$file_data=[];
+			$file_data=array();
 			$file_data['use_id'] = $uid;
 			$file_data=$File->create($file_data);
 
@@ -189,39 +185,7 @@ class FileController extends Controller {
 			}else{
 				$this->success($result);
 			}
-			
-
-			// for ($i = 0; $i < $number; $i++)
-			// {
-			// 	$name   = $filenames[$i];
-			// 	$suffix = $suffixes[$i];
-			// 	if (mb_strlen($name) > 62)
-			// 	{
-			// 		$name = mb_substr($name, 0, 58).'.'.$suffix;
-			// 	}
-			// 	$data['use_id'] = $uid;
-			// 	$data['name'] = $name;
-			// 	$data['url'] = $newnames[$i];
-			// 	if (F($newnames[$i]) == $filenames[$i])
-			// 	{
-			// 		if ($File->create($data))// && $File->add()&&$this->_renameTempFile($newnames[$i]))
-			// 		{
-			// 		//	var_dump($File->add());
-			// 		//	var_dump($this->_renameTempFile($newnames[$i]));
-			// 			$result[$i] = array('name' => $filenames[$i], 'r' => 1);
-			// 		}
-			// 		else
-			// 		{
-			// 			$result[$i] = array('name' => $filenames[$i], 'r' => 0);
-			// 		}
-			// 	}
-			// 	else
-			// 	{
-			// 		$result[$i] = array('name' => $filenames[$i], 'r' => 0);
-			// 	}
-			// }
-			// $this->success($result);
-		}
+    	}
 	}
 
 
@@ -300,7 +264,7 @@ class FileController extends Controller {
 			{
 				/*更新上传映射*/
 				unset($upload_list[$path]);
-				session('uploads',$file_cache);
+				session('uploads',$upload_list);
 				
 				/*删除文件*/
 				if (delete_file($path,'QINIU'))
@@ -314,21 +278,6 @@ class FileController extends Controller {
 			}			
 		}
 	}
-
-	// private function _renameTempFile($path)
-	// {
-	// 		$setting = C('UPLOAD_CONFIG_QINIU');
-	// 		$setting['timeout'] = 300;
-	// 		$url     = str_replace('/', '_', $path);
-	// 		$newPath = str_replace('temp_', '', $path);
-	// 		$qiniu   = new \Think\Upload\Driver\Qiniu\QiniuStorage($setting);
-	// 		$result  = $qiniu->rename($url, $newPath);
-	// 		if ($result)
-	// 		{
- //                return true;
- //            }
- //            return false;
-	// }
 
 	public function temp()
 	{

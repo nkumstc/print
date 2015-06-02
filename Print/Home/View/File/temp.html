@@ -11,15 +11,14 @@
 
 <div class="container-fluid">
     <div>
-        <h2>设置打印信息<button type="button" class="btn btn-primary btn-normal" data-toggle="modal" data-target="#printhelp">
-打印帮助</button></h2>
+        <h2>设置打印信息</h2>
     </div>
     <br/>
     <form id="print" method="post" action="__URL__/uploadOne" enctype="multipart/form-data">
         <div class="row">
             <div class="text-center col-lg-8 col-lg-offset-1  col-md-8 col-xs-12">
                 <div class="form-group">
-                    <div class="upload-btn">
+                    <div class="upload-btn" id="upload-btn">
                         <div class="upload-area"><span class="glyphicon glyphicon-open"></span>点击上传文件<small>(不超过10MB)</small></div>
                         <input id="upload-file" type="file" name="file" accept="application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation" onchange="checkSuffix()" 
                         multiple="multiple">
@@ -57,7 +56,7 @@
         <div class="row form-group text-cneter">
                 <div class="col-lg-2 col-lg-offset-1 col-xs-4 col-xs-offset-1">
                    <label for="wait" class="sr-only">设置</label>
-                    <input name="wait" id="wait" type="checkbox" data-label-text="设置" data-off-text="到店打印"  data-on-text="提前打印" data-off-color="success" data-on-color="warning" data-label-width="" disabled="true" checked="checked" />
+                    <input name="wait" id="wait" type="checkbox" data-label-text="设置" data-off-text="提前打印"  data-on-text="到店打印" data-off-color="warning" data-on-color="success" data-label-width="" disabled="true" checked="checked" />
                 </div>
                 <div class="setting">
                 <div class="col-lg-2 col-lg-offset-0 col-xs-4 col-xs-offset-1">
@@ -106,33 +105,6 @@
     </div>
     </form>
 
-<!-- Modal -->
-<div class="modal fade" id="printhelp" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">打印帮助</h4>
-      </div>
-      <div class="modal-body">
-        <p class="text-info">
-        使用流程：<code>上传文件</code> -> <code>选择打印店</code> -> <code>设置打印份数、格式</code> -> <code>文件记录页查看状态</code> -> <code>取货</code>；<br/>
-        不绑定手机不能设置打印参数，只能上传后到店打印；<br/>
-        暂时仅支持<code>pdf</code>、<code>doc(x)</code>、<code>wps</code>、<code>ppt(x)</code>格式的文件上传；<br/>
-        如上传文件名出现<code>乱码</code>，请更换浏览器。电脑下Chrome效果最佳，手机建议使用UC浏览器；<br/>
-        打印纸张默认为<code>A4</code>，有特别需要请备注；<br/>
-        无论打印店队列多长，到店可直接取货。若打印店没有提前打印，你可以在店直接打印；<br/>
-        对于提前打印的文件请于打印完成后<code>24小时</code>内取走；对于所有情况的打印请于<code>2天内</code>完成；<br/>
-        当前提供价格仅供参考，所有打印店均可在<code>量大时减价</code>。
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 </div>
 </BLOCK>
 
@@ -142,90 +114,62 @@
 
 <script language="javascript" type="text/javascript">
 
-$(function(){
-    $("[type='checkbox']").bootstrapSwitch();
-    $('.setting').hide();
-    $('#wait').on('switchChange.bootstrapSwitch',function(){
-    var fn = $('#upload-file').val();
-    var pos = fn.lastIndexOf('.');
-    var suf = fn.substring(pos + 1);
-    var other_suffix =['ppt' , 'pptx'];
-    if($('#wait').bootstrapSwitch('state') ==true){
-        $('.setting').hide(100);
-        $('#default').removeAttr('required');
-    } else {
-        $('.setting').show(100);
-        if(other_suffix.indexOf(suf) < 0) {
-            $('#default').removeAttr('required');
-            $('#pptprint').hide();
-        } else {
-            $('#default').attr('required','true');
-        }
-    }
-    });
-});
-
 var Files = function() {
     this.files = [];
     this.printer = null;
     this.print_ahead = null;
+    this.pptnum = 0;
     this.length = 0;
+    this.uploaded = 0;
 };
 
- function priceChange(n){
-    var pid = n.value;
-    var URL = "/Printers/getPrice";
-    $.post(URL, {
-            pid : pid
-        }, function(data) {
-            if (data.status) {
-                $('#p_c_s').html(data.info.p_c_s+'元/张');
-                $('#p_c_d').html(data.info.p_c_d+'元/张');
-                $('#p_s').html(data.info.p_s+'元/张');
-                $('#p_d').html(data.info.p_d+'元/张');
-            } else {
-                $('#p_c_s').html("未设置");
-                $('#p_c_d').html("未设置");
-                $('#p_s').html("未设置");
-                $('#p_d').html("未设置");
-            }
-        });
-}
-
 Files.prototype.addFile = function(file) {
-    var legal = (file instanceof PDF)||(file instanceof DOC)||(file instanceof PPT)
+    var legal = (file instanceof PDF)||(file instanceof DOC)||(file instanceof PPT);
     if (legal) {
         this.files.push(file);
+        this.length++;
     };
 };
 
 Files.prototype.delete = function(id) {
-    if (file_queue.files[id].uploadStatus) 
+    if(this.files[id].suffix=="ppt")
     {
-        var URL = "/File/deleteTempFile";
-        var temp = this;
-        $.post(URL, {
-                path : temp.files[id].newname
-            }, function(data) {
-                if (data.status) {
-                    alert(data.info);
-                    temp.files[id] = undefined;
-                    temp.length--;
-                } else {
-                    alert(data.info);
-                }
-            });
+        this.pptnum--;
     }
-    else
+    $('#file_'+id).remove();
+    this.length--;
+    if(this.pptnum==0)
     {
-        temp.files[id] = undefined;
-        temp.length--;
+        $('#pptprint').hide();
+        $('#default').removeAttr('required');
     }
-};
+    if(this.length==0)
+    {
+        $('.setting').hide();
+        $('#wait').bootstrapSwitch('disabled',true);
+        $('#fileUploadButton').attr('disabled', false);
+    }
+    this.files[id]=undefined;
+    this.updateInput();
+}
 
 Files.prototype.reUpload = function(id) {
     this.files[id].getToken();
 };
+
+Files.prototype.updateInput = function()
+{
+    if(this.uploaded==this.length)
+    {
+        var temp = document.getElementById('upload-file');
+        temp.remove();
+        temp = document.getElementById('upload-btn');
+        temp =$('#upload-btn');
+        temp.append('<input id="upload-file" type="file" name="file" accept="application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation" onchange="checkSuffix()" multiple="multiple">');
+    }
+}
+
+
 
 function File(id,name,suffix)
 {
@@ -236,63 +180,6 @@ function File(id,name,suffix)
     this.uploadStatus = false;
     this.newname = null;
 }
-
-
-// function completeHandler (myXhr,status) {
-//     if (myXhr.readyState==4) {
-//         // var temp_name = myXhr.
-//         var file_view = $('#file_'+myXhr.id);
-//         var span = file_view.find(span);
-//         if (myXhr.status==200) {
-//             myXhr.uploadStatus = true;
-//             span.html('uploaded');
-//             span.append('<button type="button" class="btn btn-danger btn-xs delete" onclick="deleteFile(this)">delete</button>');
-//         }
-//         else {
-//             span.html('upload failed');
-//             span.append('<button type="button" class="btn btn-primary btn-xs re-upload" onclick="reUpload(this)">reUpload</button>');
-//         }
-//     }
-// }
-// function beforeSendHandler (myXhr,settings) {
-    
-// }
-// function errorHandler (myXhr,status,error) {
-    
-// }
-
-// function progressHandlingFunction (e) {
-//     if (e.lengthComputable) {
-//         $('#progress').html('value:'+e.loaded+'max:'+e.total);
-//     };
-// }
-// File.prototype.uploadFile = function() {
-//     var url = 'http://upload.qiniu.com/';
-//     var file = document.getElementById('upload-file').files[this.id];
-//     var fd = new FormData();
-//     fd.append('file',file);
-//     fd.append('token',this.token);
-//     fd.append('key',this.newname);
-//     $.ajax({
-//         url:url,
-//         type:'POST',
-//         xhr:function  () {
-//             var myXhr = $.ajaxSettings.xhr();
-//             if (myXhr.upload) {
-//                 myXhr.upload.addEventListener('progress',progressHandlingFunction,false);
-//             };
-//             return myXhr;
-//         },
-//         beforeSend: beforeSendHandler,
-//         complete: completeHandler,
-//         error: errorHandler,
-//         data: fd,
-//         cache: false,
-//         contentType:false,
-//         processData: false
-//     });
-// };
-
 
 File.prototype.uploadFile = function() {
     var url = 'http://upload.qiniu.com/';
@@ -313,7 +200,6 @@ File.prototype.uploadFile = function() {
     }
     fd.append('file',files[id]);
     fd.append('token',this.token);
-    fd.append('key','temp_'+this.newname);
     var xmlhttp=null;
     if (window.XMLHttpRequest)
     {
@@ -341,16 +227,22 @@ File.prototype.uploadFile = function() {
 function uploaded() {
     if (this.readyState==4) {
         var file_view = $('#file_'+this.id);
-        var span = file_view.find('span');
-        if (this.status==200) {
+        var span = file_view.find('.file_op');
+        var attr = file_view.find('.file_attr');
+        if (this.status==200){
             file_queue.files[this.id].uploadStatus = true;
-            file_queue.length++;
-            span.html('uploaded');
-            span.append('<button type="button" class="btn btn-danger btn-xs delete" onclick="deleteFile(this)">delete</button>');
+            file_queue.uploaded++;
+            file_queue.updateInput();
+            attr.removeClass();
+            attr.addClass("file_attr label label-success");
+            attr.html('上传成功');
+            span.html('<span class="glyphicon glyphicon-remove delete" onclick="deleteFile(this)"></span>');
         }
         else {
-            span.html('upload failed');
-            span.append('<button type="button" class="btn btn-primary btn-xs re-upload" onclick="reUpload(this)">reUpload</button><button type="button" class="btn btn-danger btn-xs delete" onclick="deleteFile(this)">delete</button>');
+            attr.removeClass();
+            attr.addClass("file_attr label label-danger");
+            attr.html('上传失败');
+            span.html('<span class="glyphicon glyphicon-repeat re-upload" onclick="reUpload(this)"></span>&nbsp;&nbsp;<span class="glyphicon glyphicon-remove delete" onclick="deleteFile(this)"></span>');
         }
     }
 }
@@ -362,7 +254,6 @@ File.prototype.getToken = function() {
     $.post(URL,
             {
                 filename:temp.name,
-                // suffix:temp.suffix
             },
             function(data){
         if(data.status)
@@ -375,34 +266,30 @@ File.prototype.getToken = function() {
 };
 var temp = function() {};
 temp.prototype = File.prototype;
-
 var PDF = function(id,name,suffix) {
     File.apply(this,arguments);
-    $("#upload-list").append('<li class="list-group-item" id="file_'+id+'">当前文件：'+name +'<span style="color:red">uploading</span></li>');
+    $("#upload-list").append('<li class="list-group-item" id="file_'+id+'"><span class="file_attr" style="float:left"></span><span style="float:left">'+ name +'</span><span class="file_op" style="float:right"><span class="label label-xs label-success">上传中..</span></span></li>');
 }
 PDF.prototype = new temp();
 
 var DOC = function(id,name,suffix) {
     File.apply(this,arguments);
-    $("#upload-list").append('<li class="list-group-item" id="file_'+id+'">当前文件：'+name +'(支持的格式，但更推荐pdf)<span style="color:red">uploading</span></li>');
+    $("#upload-list").append('<li class="list-group-item" id="file_'+id+'"><span class="file_attr" style="float:left"></span><span style="float:left">'+ name +'(支持的格式，但更推荐pdf)</span> <span class="file_op" style="float:right"><span class="label label-xs label-success">上传中..</span></span></li>');
 }
 DOC.prototype = new temp();
 
 var PPT = function(id,name,suffix) {
     File.apply(this,arguments);
-    $("#upload-list").append('<li class="list-group-item" id="file_'+id+'">当前文件：'+name +'<span style="color:red">uploading</span></li>');
+    $("#upload-list").append('<li class="list-group-item" id="file_'+id+'"><span class="file_attr" style="float:left"></span><span style="float:left">'+name +'</span><span style="float:right" class="file_op"><span class="label label-xs label-success">上传中..</span></span></li>');
 }
 PPT.prototype = new temp();
 
 var UNKNOWN = function(name,error_type) {
-    if(error_type=='big')
-    {
-      $("#upload-list").append('<li class="list-group-item">当前文件：'+filename +'<span style="color:red">文件太大了</span></li>'); 
-    }else if(error_typle =='suffix')
-    {
-     $("#upload-list").append('<li class="list-group-item">当前文件：'+name +'<span style="color:red">后缀名不对</span></li>');
-    }else{
-    }
+    if(error_type=='big') {
+      $("#upload-list").append('<li class="list-group-item"><span class="file_attr" style="float:left"></span><span style="float:left">'+filename +'</span> <span style="float:right" class="file_op"><span class="label label-xs label-danger">文件过大</span></span></li>');
+    } else if(error_typle =='suffix') {
+        $("#upload-list").append('<li class="list-group-item"><span class="file_attr" style="float:left"></span><span style="float:left">'+name +'</span><span style="float:right" class="file_op"><span class="label label-xs label-danger">不支持的格式</span></span></li>');
+    } else{}
 }
 
 var file_queue = new Files();
@@ -412,12 +299,6 @@ var pdf_suffix = ['pdf'];
 var other_suffix = ['ppt', 'pptx'];
 
 function checkSuffix() {
-    $("#wait").bootstrapSwitch('disabled',false);
-    $("#pptprint").hide();
-    $('#copies').attr('disabled', false);
-    $('#double_side').bootstrapSwitch('disabled', false);
-    $('#printcolor').bootstrapSwitch('disabled', false);
-    $("#fileUploadButton").attr('disabled', false);
     var files = document.getElementById('upload-file').files;
     for (var i = 0; file = files[i]; i++) 
     {
@@ -426,10 +307,10 @@ function checkSuffix() {
         var suffix = filename.substring(pos+1);
         var newFile = null;
         var samename =false;
-        for (var i = 0; i< file_queue.files.length; i++)        
+        for (var j = 0; j< file_queue.files.length; j++)        
         {
-            if (file_queue.files[i]!==undefined) {
-            if(filename == file_queue.files[i].name)
+            if (file_queue.files[j]!==undefined) {
+            if(filename == file_queue.files[j].name)
             {
                 samename=true;
                 break;
@@ -447,64 +328,62 @@ function checkSuffix() {
         }
         if (other_suffix.indexOf(suffix)>=0)
         {
-            newFile = new PPT(file_queue.files.length,filename,suffix);
+            newFile = new PPT(file_queue.files.length,filename,suffix); 
             newFile.getToken();
             file_queue.addFile(newFile);
-            $('#pptprint').show();
+            file_queue.pptnum++;
             $('#default').attr('required','true');
         }
         else if (pdf_suffix.indexOf(suffix)>=0) 
         {
-            newFile = new PDF(file_queue.files.length,filename,suffix);
+            newFile = new PDF(file_queue.files.length,filename,suffix); 
             newFile.getToken();
             file_queue.addFile(newFile);
         }
         else if (doc_suffix.indexOf(suffix)>=0)
         {            
-            newFile = new DOC(file_queue.files.length,filename,suffix);
+            newFile = new DOC(file_queue.files.length,filename,suffix); 
             newFile.getToken();
-            file_queue.addFile(newFile);
+            file_queue.addFile(newFile); 
         }
         else
         {
             newFile = new UNKNOWN(filename,'suffix');
         }
     }
+    if(file_queue.files.length)
+    {
+    $("#wait").bootstrapSwitch('disabled',false);
+    $("#pptprint").hide();
+    $('#copies').attr('disabled', false);
+    $('#double_side').bootstrapSwitch('disabled', false);
+    $('#printcolor').bootstrapSwitch('disabled', false);
+    $("#fileUploadButton").attr('disabled', false);
+    if(file_queue.pptnum>0&&($('#wait').bootstrapSwitch('state')==false))
+    {
+        $('#pptprint').show();
+    }
+    }
 }
 
-$("#helpView").click(function(){
-    $('#helpView').toggleClass('btn-warning')
-    $('#help-info').toggle(100);
-});
-
 $("#upload-file").click(function(e){
-    for (var i = 0; i < file_queue.files.length; i++) {
-             var file = file_queue.files[i];
-             if (file!==undefined) {
-             if(file.uploadStatus==false)
-             {
-                alert('wait');
-                return false;
-             }
-             }
+    if(file_queue.uploaded!=file_queue.length)
+    {
+        return false;
     }
 });
 
 
 $("#print").submit(function(e){
     e.preventDefault();
-    var filenames = [];
     var newnames = [];
-    var suffixes = [];
     for (var i = 0; i < file_queue.files.length; i++) {
         var file = file_queue.files[i];
         if (file!==undefined) {
             if (file.uploadStatus==false) {
                 return false;
             }
-            filenames.push(file.name);
             newnames.push(file.newname);
-            suffixes.push(file.suffix);
         }
     }
     var url = '__URL__/upload';
@@ -516,10 +395,7 @@ $("#print").submit(function(e){
     var ppt_layout = $('default').val();
     var wait = $('#wait').bootstrapSwitch('state')?1:0;
     $.post(url, {
-            // 'filenames[]':filenames,
             'files[]':newnames,
-            // 'suffixes[]':suffixes,
-            // number:file_queue.length,
             pri_id:pri_id,
             color:color,
             double_side:double_side,
@@ -547,22 +423,79 @@ $("#print").submit(function(e){
 function deleteFile (e) {
     var id = e.parentNode.parentNode.getAttribute('id').replace(/file_/,"");
     id = parseInt(id);
-    file_queue.delete(id);
-    $('#file_'+id).remove();
+    var temp = file_queue.files[id];
+    if (temp.uploadStatus) 
+    {
+        var URL = "/File/deleteTempFile";
+        $.post(URL, {
+                path : temp.newname
+            }, function(data) {
+                if (data.status) {
+                    file_queue.uploaded--;
+                    file_queue.delete(id);
+                } else {
+                    alert(data.info);
+                }
+        });
+    }
+    else
+    {
+        file_queue.delete(id);
+    }
 }
 
 function reUpload (e) {
     var id = e.parentNode.parentNode.getAttribute('id').replace(/file_/,"");
     id = parseInt(id);
     file_queue.reUpload(id);
-
-        var file_view = $('#file_'+this.id);
-        var span = file_view.find('span');
-        file_queue.files[this.id].uploadStatus = true;
-        file_queue.length++;
-        span.html('uploading');
+    var file_view = $('#file_'+id);
+    var span = file_view.find('.file_op');
+    var attr = file_view.find('.file_attr');
+    attr.removeClass();
+    attr.addClass("file_attr");
+    attr.html('');
+    span.html('<span class="label label-xs label-success">上传中..</span>');
 }
 
+function priceChange(n){
+    var pid = n.value;
+    var URL = "/Printers/getPrice";
+    $.post(URL, {
+            pid : pid
+        }, function(data) {
+            if (data.status) {
+                $('#p_c_s').html(data.info.p_c_s+'元/张');
+                $('#p_c_d').html(data.info.p_c_d+'元/张');
+                $('#p_s').html(data.info.p_s+'元/张');
+                $('#p_d').html(data.info.p_d+'元/张');
+            } else {
+                $('#p_c_s').html("未设置");
+                $('#p_c_d').html("未设置");
+                $('#p_s').html("未设置");
+                $('#p_d').html("未设置");
+            }
+        });
+}
+
+$(function(){
+    $("[type='checkbox']").bootstrapSwitch();
+    $('.setting').hide();
+    $('#wait').on('switchChange.bootstrapSwitch',function(){
+    if($('#wait').bootstrapSwitch('state') ==true){
+        $('.setting').hide(100);
+        $('#default').removeAttr('required');
+    } else {
+        $('.setting').show(100);
+        if(file_queue.pptnum==0) {
+            $('#default').removeAttr('required');
+            $('#pptprint').hide();
+        } else {
+            $('#pptprint').show();
+            $('#default').attr('required','true');
+        }
+    }
+    });
+});
 
 </script>
 </BLOCK>

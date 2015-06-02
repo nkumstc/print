@@ -36,9 +36,12 @@ class CardController extends Controller {
 	public function index()
 	{
 		$uid = use_id();
-		if (!$uid){
+		if ( ! $uid)
+		{
 			$this->display('intro');
-		} else {
+		}
+		else
+		{
 			$user = M('User')->field('phone,status')->getById($uid);
 			$card = M('Card')->getById($uid);
 			if ($user['status'] < 0)
@@ -74,7 +77,16 @@ class CardController extends Controller {
 		$id = use_id('User/index');
 		$Cardlog = D('CardlogView');
 		$this->lost = $Cardlog->where("lost_id=$id")->field('id,find_id,find_name,find_number,time,status')->order('id desc')->select();
-		$this->find = $Cardlog->where("find_id=$id")->field('id,lost_id,lost_name,lost_number,time,status')->order('id desc')->select();
+		$find = $Cardlog->where("find_id=$id")->field('id,lost_id,lost_name,lost_number,time,status')->order('id desc')->select();
+		foreach ($find as $i => $f) //id为0表示非云印用户
+		{
+			if ($f['lost_id'] == 0)
+			{
+				$find[$i]['lost_name'] = '非云印用户';
+				$find[$i]['lost_number'] = '尚未注册';
+			}
+		}
+		$this->find = $find;
 		$this->display();
 	}
 
@@ -379,6 +391,7 @@ class CardController extends Controller {
 			$this->send_msg = L('CARD_MSG_OUT', $msg_info);
 		}
 		$this->finder_name = $finder['name'];
+		$this->finder_phone = get_phone_by_id($uid);
 		$this->display();
 	}
 
@@ -412,32 +425,36 @@ class CardController extends Controller {
 		{
 			S($cache_name, $times + 1, 3600);
 		}
-
 		/*添加到丢失记录*/
 		$receiver_id = $receiver['uid'] ? $receiver['uid'] : 0;
-		$log = array('find_id' => $uid, 'lost_id' => $receiver_id, 'status' => 0);
+		$log    = array('find_id'    => $uid, 'lost_id'    => $receiver_id, 'status'    => 0);
 		$msg_id = M('Cardlog')->add($log);
-		/*获取拾主和失主的信息*/
-		$School = M('School');
-		$finder = M('User')->field('name,sch_id')->getById($uid);
+		$finder = $User->field('sch_id,name')->getById($uid);
 		//是否匿名
 		$finder_name = I('anonymity') ? '云小印' : $finder['name'];
-		$msg_info = array(
-			'card_number' => $receiver['number'],
-			'card_name' => '[' . $msg_id . ']' . $receiver['name'],
-			'card_school' => $School->cache(true)->getFieldById($receiver['sch_id'], 'name'),
-			'finder_name' => $finder_name,
-			'finder_school' => $School->cache(true)->getFieldById($finder['sch_id'], 'name'),
-			'msg' => I('add_msg'),
+		//是否公开手机
+		$finder_phone = I('add_phone') ? get_phone_by_id($uid) : '';
+		$finder_school = M('School')->cache(true)->getFieldById($finder['sch_id'], 'name');
+		/*$msg_info = array(
+		'card_number' => $receiver['number'],
+		'card_name' => '[' . $msg_id . ']' . $receiver['name'],
+		'card_school' => $School->cache(true)->getFieldById($receiver['sch_id'], 'name'),
+		'finder_name' => $finder_name,
+		'finder_school' => $School->cache(true)->getFieldById($finder['sch_id'], 'name'),
+		'msg' => I('add_msg'),
 		);
-
-		$msg = L('CARD_MSG_IN', $msg_info);
+		$msg = L('CARD_MSG_IN', $msg_info);*/
 
 		/*post数据到API*/
 		$url = 'https://newfuturepy.sinaapp.com/broadcast';
 		$data = array(
-			'key'    => C('WEIBO_API_PWD'),
-			'status' => base64_encode($msg),
+			'key'           => C('WEIBO_API_PWD'),
+			'school'        => M('School')->cache(true)->getFieldById($receiver['sch_id'], 'name'),
+			'card_id'       => $receiver['number'],
+			'name'          => $receiver['name'],
+			'contact_name'  => $finder_school.$finder_name.'['.$msg_id.']',
+			'contact_phone' => $finder_phone,
+			'msg'           => I('add_msg'),
 		);
 		$result = json_decode($this->_post($url, $data));
 		if ($result)
@@ -448,6 +465,7 @@ class CardController extends Controller {
 		}
 		else
 		{
+			M('Cardlog')->where('id=%d', $msg_id)->delete();
 			$this->error('发送失败，请通过其他方式寻找失主或联系我们');
 		}
 
