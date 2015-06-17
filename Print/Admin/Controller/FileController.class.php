@@ -59,7 +59,7 @@ class FileController extends Controller {
 		{
 			$this->redirect('Admin/Index/login');
 		}
-		$status = I('post.status', null, 'int');
+		$status = I('get.status', null, 'int');
 		switch ($status)
 		{
 			case 0:
@@ -92,7 +92,6 @@ class FileController extends Controller {
 		{
 			$file['ppt_layout'] = $ppt_layout[$file['ppt_layout']];
 		}
-		unset($file);
 		$this->data = $result;
 		$this->assign('page', $show);
 		$this->assign('status', $status);
@@ -224,7 +223,7 @@ class FileController extends Controller {
 				{
 					echo "发送不成功";
 				}
-				echo $phone."\t\t".$msgInfo["user_name"]."\t\t".$msgInfo["info"]."\t\t".$msgInfo["status"];
+				echo $phone."\t\t".$msgInfo["user_name"]."\t\t".$msgInfo["info"]."\t\t".$msgInfo["status"]."<br />";
 			}
 		}
 	}
